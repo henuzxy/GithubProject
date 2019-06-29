@@ -1,6 +1,6 @@
 #include<stdio.h>
 #include<unistd.h>
-
+#include<getopt.h>
 int main(int argc,char *argv[]){
 	int opt;
 	char *str = "a::b:c:d";
@@ -17,5 +17,11 @@ int main(int argc,char *argv[]){
 		printf("optarg = %s\t\t",optarg);
 		printf("argv[optind] = %s\n",argv[optind]);
 	}
+	/*
+		optarg -- 指向当前选项参数的指针
+		optind -- 再次调用getopt()时的下一个argv指针索引
+		optopt --最后一个未知选项
+		opterr -- 错误信息，如果不希望打印错误信息可以设置全域变量opterr为0
+	 */
 	return 0;
 }
