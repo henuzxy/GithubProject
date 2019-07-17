@@ -1,0 +1,48 @@
+compiler commond
+g++ name.cpp -o name
+
+g++ name.cpp -o name -std=c++11
+//use C++11 compiler
+
+g++ name.cpp -o name -lpthread
+//编译时使用链接线程库
+g++ name.cpp -o name -D_REENTRANT -lpthread
+//使用-D_REENTRANT会在编译时使用的是线程安全的函数。
+./name
+run
+
+cat /proc/sys/kernel/osrelease
+//show linux version
+
+vim -r name
+//恢复.swp文件
+rm -rf dir
+
+将文件推送到github仓库
+git add filename
+//将文件添加到暂存区
+git commit -m "info"
+//提交本次修改
+git push origin master
+//推送到远程仓库的master分支
+git rm fiel(删除文件)
+git rm -r aaa(删除文件夹)
+
+%lx %x %lX %X 输出32位，64位的数的十六进制形式。
+
+INADDR_NONE 的值是0xFFFFFFFF表示无效的IP地址。调用inet_addr，失败时返回这个值
+C 语言里面没有重载，函数重载等等都没有。
+/* 向后搜索; ?*向前搜索
+atoi();//把一个字符串转换为整数，遇到abc这种错误格式会返回0，遇到12.4这种小数会返回12
+bzero(void *s,int n);//把前n个字节置位0，现在用memset()代替
+strncasecmp(void *s1,void *s2,int n);
+strcasecmp(void *s1,void *s2);//忽略大小写比较
+strcmp(void *s1,void *s2);
+strncmp(void *s1,void *s2,int n);
+
+char* strstr(char *s1,char *s2);//返回匹配串的首个地址
+
+一个进程的内存空间：数据区(全局区域)，堆区域，栈区域。
+全局变量，静态变量，const常量存放在全局区。
+函数运行使用栈
+new，malloc等函数动态分配提供堆空间
