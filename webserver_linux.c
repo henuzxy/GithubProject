@@ -9,10 +9,10 @@
 #define BUF_SIZE (1024)
 #define SMALL_BUF (128)
 #define true (1)
-void* request_handler(void* arg);
-void send_data(FILE* fp,char* ct,char* file_name);
-char* content_type(char* file);
-void send_error(FILE* fp);
+void* request_handler(void* arg);//获得请求行的信息，并执行响应
+void send_data(FILE* fp,char* ct,char* file_name);//发送响应信息
+char* content_type(char* file);//返回文件内容的type
+void send_error(FILE* fp);//报错内容
 void error_handling(const char* message);
 
 int main(int argc,char* argv[]){
@@ -58,6 +58,7 @@ void* request_handler(void *arg){
     clnt_read = fdopen(clnt_sock,"r");
     clnt_write = fdopen(dup(clnt_sock),"w");
     fgets(req_line,SMALL_BUF,clnt_read);
+    fprintf(stdout,"req_line:%s\n",req_line);
     if(strstr(req_line,"HTTP/") == NULL){
         send_error(clnt_write);
         fclose(clnt_read);
@@ -66,6 +67,7 @@ void* request_handler(void *arg){
     }
     strcpy(method,strtok(req_line," /"));
     strcpy(file_name,strtok(NULL," /"));
+    fprintf(stdout,"file_name:%s\n",file_name);
     strcpy(ct,content_type(file_name));
     if(strcmp(method,"GET") != 0){
         send_error(clnt_write);
@@ -78,8 +80,9 @@ void* request_handler(void *arg){
     send_data(clnt_write,ct,file_name);
     return NULL;
 }
-
+/*响应消息*/
 void send_data(FILE* fp,char* ct,char* file_name){
+    fprintf(stdout,"send_data/file_name = %s\n",file_name);
     char protocol[] = "HTTP/1.0 200 ok\r\n";
     char server[] = "Server:Linux Web Server \r\n";
     char cnt_len[] = "Content-length:2048\r\n";
