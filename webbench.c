@@ -43,26 +43,232 @@ static void Usage(void){
 #define METHOD_TRACE (3)
 
 /*代码相关的宏定义*/
-#define bool char
+#define bool int
 #define true (1)
 #define false (0)
+#define PROGRAM_VERSION "1.5"
+/*缓冲流大小相关的宏定义*/
+#define REQUEST_SIZE (2048)
 
-/*相关参数与其默认值*/
+/*选项相关变量与其默认值*/
 int method = METHOD_GET;
 int clients = 1;
 bool force = false;
 bool reload = false;
-int port = 80;
+int proxy_port = 80;
 char* proxyhost = NULL;//默认不使用代理
 int bench_time = 30;
 int http = 1;//http协议版本，0:http0.9 1:http1.0 2:http1.1
+/*结果统计相关的变量*/
+int speed = 0;
+int failed = 0;
+long long int byte_counts = 0;
+int timeout = 0;
 
 /*进程管道*/
-int pipe[2];
+int pipe_buf[2];
+/*服务器网络地址*/
+char host[MAXHOSTNAMELEN];//这个宏在rpc/types.h下
 
+/*请求消息*/
+char request[REQUEST_SIZE];
 
+/*长选项数组*/
+static const struct option long_options[] = {
+    {"force",no_argument,&force,true},
+    {"reload",no_argument,&reload,true},
+    {"time",required_argument,NULL,'t'},
+    {"help",no_argument,NULL,'h'},
+    {"http09",no_argument,&http,0},
+    {"http10",no_argument,&http,1},
+    {"http11",no_argument,&http,2},
+    {"get",no_argument,&method,METHOD_GET},
+    {"head",no_argument,&method,METHOD_HEAD},
+    {"options",no_argument,&method,METHOD_OPTIONS},
+    {"trace",no_argument,&method,METHOD_TRACE},
+    {"version",no_argument,NULL,'v'},
+    {"proxy",required_argument,NULL,'p'},
+    {"clients",required_argument,NULL,'c'},
+    {NULL,0,NULL,0}
+};
+/*相关函数*/
+void build_request(const char*url);//构造请求消息
+static int bench();/*压力测试*/
+static void alarm_handler(int signal);/*闹钟信号处理*/
+void benchcore(const char* host,const int port,const char* req);
+void error_handling(const char* message);
 int main(int argc,char* argv[]){
-    Usage();
+    int opt = 0;
+    int options_index = 0;
+    char *temp = NULL;
 
-    return 0;
+    if(argc == 1){
+        Usage();
+        exit(1);
+    }
+    /*短参数选项*/
+    const char optstring[] = "frt:h?912vp:c:";
+    
+    while((opt = getopt_long(argc,argv,optstring,long_options,&options_index)) != EOF){
+        switch(opt){
+            case 0:
+                break;//参数值被放入对应变量，返回
+            case 'f':
+                force = true;
+                break;
+            case 'r':
+                reload = true;
+                break;
+            case 't':
+                bench_time = atoi(optarg);
+                break;
+            case 'h':
+            case '?':
+                Usage();
+                exit(0);//带有该参数，程序会直接结束
+            case '9':
+                http = 9;break;
+            case '1':
+                http = 1;break;
+            case '2':
+                http = 2;break;
+            case 'v':
+                fprintf(stdout,PROGRAM_VERSION "\n");
+                exit(0);
+            case 'p':
+                /*代理服务器格式 server:port*/
+                temp = strrchr(optarg,':');/*返回最后一个':',的位置*/
+                proxyhost = optarg;
+                if(temp == NULL)    break;
+                if(temp == optarg){
+                    fprintf(stderr,"Error in option --proxy %s:缺少主机名",optarg);
+                    exit(1);
+                }
+                if(temp == optarg+strlen(optarg)-1){
+                    fprintf(stderr,"Error in option --proxy %s:缺少端口号",optarg);
+                    exit(1);
+                }
+                *temp = '\0';
+                proxy_port = atoi(temp+1);
+                break;
+            case 'c':
+                clients = atoi(optarg);
+                break;
+        }
+    }
+    //测试getopt函数
+    fprintf(stdout,"force = %d,reload = %d,bench_time = %d,http = %d,proxyhost = %s,proxy_port = %d,clients = %d\n",force,reload,bench_time,http,proxyhost,proxy_port,clients);
+    if(optind == argc){
+        fprintf(stderr,"webbench:没有链接URL\n");
+        Usage();
+        exit(0);
+    }
+    /*考虑用户输入错误的情况,使用默认值*/
+    if(clients <= 0)
+        clients = 1;
+    if(bench_time <= 0)
+        bench_time = 30;
+    /*构造请求消息*/ 
+    build_request(argv[optind]);
+    
+    /**/
+    fprintf(stdout,"Webbench --一款网站压力测试程序\n");
+    fprintf(stdout,"测试链接:%s\n",argv[optind]);
+    fprintf(stdout,"运行信息:");
+    fprintf(stdout,"%d 客户端, 运行 %d 秒",clients,bench_time);
+    if(force)
+        fprintf(stdout,",提前关闭连接");
+    if(proxyhost != NULL)
+        fprintf(stdout,"，使用代理服务器 %s:%d",proxyhost,proxy_port);
+    if(reload)
+        fprintf(stdout,",无缓存连接");
+    fprintf(stdout,".\n");
+
+    return bench();
+}
+
+void build_request(const char *url){
+    char temp[10];
+    /**/
+    memset(host,0,MAXHOSTNAMELEN);
+    memset(request,0,REQUEST_SIZE);
+   
+    /*
+        http0.9只有get这一种方法,不支持缓存机制.
+        http1.0有get,post,head三种方法，支持长连接，缓存机制
+        http1.1 四种方法都有.
+    */
+    if(reload && proxyhost != NULL && http == 0)
+        http = 1;
+    if(method == METHOD_HEAD && http == 0)
+        http = 1;
+    if(method == METHOD_OPTIONS && http < 2)
+        http = 2;
+   
+    switch(method){
+        default:
+        case METHOD_GET:
+            strcpy(request,"GET ");
+            break;
+        case METHOD_HEAD:
+            strcpy(request,"HEAD ");
+            break;
+        case METHOD_OPTIONS:
+            strcpy(request,"OPTIONS ");
+            break;
+        case METHOD_TRACE:
+            strcpy(request,"TRACE ");
+            break;
+    }
+    
+    if(strstr(url,"://") == NULL){
+        fprintf(stderr,"\n%s 不是一个合法的URL",url);
+        exit(2);
+    }
+    if(strlen(url) > 1000){
+        fprintf(stderr,"URL 长度超过合法值");
+        exit(2);
+    }
+    if(strncasecmp("http://",url,7) != 0){
+        fprintf(stderr,"只有http协议是被支持的.");
+        exit(2);
+    }
+    /*主机名起始位置*/
+    int pos = strstr(url,"://")-url+3;
+    
+    if(strchr(url+pos,'/') == NULL){
+        fprintf(stderr,"url不合法，地址结束位置必须是 '/'.\n");
+        exit(2);
+    }
+    /*未使用代理服务器时*/
+    if(proxyhost == NULL){
+        /*获取域名和端口*/
+        if(index(url+pos,':') != NULL && index(url+pos,':') < index(url+pos,'/')){
+            strncpy(host,url+pos,strchr(url+pos,':')-url-pos);
+            memset(temp,0,sizeof(temp));
+
+            strncpy(temp,index(url+pos,':')+1,strchr(url+pos,'/')-index(url,':')-1);
+            proxy_port = atoi(temp);
+            if(proxy_port == 0)
+                proxy_port = 80;
+        }
+        else{
+            strncpy(host,url+pos,strchr(url+pos,'/')-url-pos);
+        }
+        strcat(request+strlen(request),url+pos+strcspn(url+pos,"/"));
+    }
+    else{
+        strcat(request,url);
+    }
+    if(http == 1)
+        strcat(request," HTTP/1.0");
+    else if(http == 2)
+        strcat(request," HTTP/1.1");
+    strcat(request,"\r\n");
+    
+    if(http > 0)
+        strcat(request,"")
+}
+static int bench(){
+    return 0;    
 }

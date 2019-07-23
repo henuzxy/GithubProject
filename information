@@ -32,7 +32,7 @@ git rm -r aaa(删除文件夹)
 
 INADDR_NONE 的值是0xFFFFFFFF表示无效的IP地址。调用inet_addr，失败时返回这个值
 C 语言里面没有重载，函数重载等等都没有。
-/* 向后搜索; ?*向前搜索
+// /* 向后搜索; ?*向前搜索
 atoi();//把一个字符串转换为整数，遇到abc这种错误格式会返回0，遇到12.4这种小数会返回12
 bzero(void *s,int n);//把前n个字节置位0，现在用memset()代替
 strncasecmp(void *s1,void *s2,int n);
@@ -40,6 +40,8 @@ strcasecmp(void *s1,void *s2);//忽略大小写比较
 strcmp(void *s1,void *s2);
 strncmp(void *s1,void *s2,int n);
 
+size_t strcspn(const char *s,const char *reject);
+从s开始，计算不在reject内的字符个数,遇到reject所含有的字符便停止.
 char* strstr(char *s1,char *s2);//返回匹配串的首个地址
 
 一个进程的内存空间：数据区(全局区域)，堆区域，栈区域。
@@ -59,3 +61,36 @@ char *strtok(char s[],const char*delim);
 
 char str[] = "hello," "This word"
 对于多个""引用,在C语言里面会合并成一个字符串处理
+
+static修饰的函数和普通函数
+static修饰的函数只能在本文件中使用，不能被其他文件所调用，普通的函数，默认是extern的，可以被其他文件所调用。
+静态函数优点:
+    1.在其他文件中可以定义相同名称的函数，不会发生冲突.
+    2.保证该函数只能在该文件下使用
+
+#include<getopt.h>
+extern char *optarg;
+extern int optind,opterr,optopt;
+getopt_long(int argc,char* const argv[],const char* optstring,const struct option* longopts,int* longindex);
+
+optstring:短字符选项
+longopts:长字符选项
+longindex:如果非空，它指向的变量将记录当前参数符合longopts里面的位置，即longopts的下标
+struct option{
+    const char *name;
+    int has_arg;
+    int *flag;
+    int val;
+}
+/*当参数flag == NULL时，返回val的值.否则*flag = val,返回0*/
+has_arg的参数有
+no_argument:表明长选项不带参数，如--help,--version
+required_argument:表明长选项必须带参数,如--time 30,--port 8080
+optional_argument:表明长选项的参数是可选的,如--clients 100,--clients
+
+/*全局变量的意义*/
+optarg:指向当前选项参数的指针,如果当前选项没有参数，指向NULL
+optind:调用getopt()时下一个argv指针的索引
+optopt:最后一个未知选项
+opterr:如果不希望getopt()打印报错信息，只需要把opterr = 0;
+
