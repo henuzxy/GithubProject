@@ -266,8 +266,6 @@ void build_request(const char *url){
         strcat(request," HTTP/1.1");
     strcat(request,"\r\n");
     
-    if(http > 0)
-        strcat(request,"")
 }
 static int bench(){
     return 0;    
