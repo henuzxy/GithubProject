@@ -105,3 +105,44 @@ opterr:如果不希望getopt()打印报错信息，只需要把opterr = 0;
     a = 2;
     a = 3;
 这种代码对编译器而言，会认为是a = 3,把a存在一个寄存器中，每次遇到a都在这个寄存器中读取，但a可能是该百年的，在中断，或者多进程。
+
+/*僵尸进程*/
+向exit()函数传递参数和main()函数的返回值都会传递给操作系统。然而操作系统不会销毁子进程，直到把这些值传递给产生该子进程的父进程。处于这种状态下的进程就是僵尸进程。
+/*一个僵尸进程产成的示例:zombie.c*/
+int main(int argc,char *argv[]){
+    pid_t pid = fork();
+    if(pid == 0){
+        fprintf(stdout,"child process.\n");
+    }
+    else{
+        fprintf(stdout,"child process ID:%d\n",pid);
+        sleep(20);
+    }
+    if(pid == 0){
+        fprintf(stdout,"End child process\n");
+    }
+    else{
+        fprintf(stdout,"End parent process.\n");
+    }
+    return 0;
+}
+子进程结束后，父进程仍在执行sleep,这时子进程就变为僵尸进程。
+
+ps au//查看进程列表
+
+/*销毁僵尸进程*/
+父进程主动获取子进程的结束状态值,这样便可以销毁子进程.
+1.利用wait()函数
+#include<sys/wait.h>
+pid_t wait(int *statloc);
+调用该函数时，如果已经有子进程终止，那么子进程终止时传递的返回值将保存到statloc所指向的内存空间,但该空间还保存有其他信息,需要利用宏来分离.
+WIFEXITED();//子进程正常终止时返回真.
+WEXITSTATUS();//返回子进程的返回值.
+/*调用示例*/
+int status;
+.......
+wait(&status);
+if(WIFEXITED(status))
+    fprintf(stdout,"Child send:%d\n",WEXITSTATUS(status));
+
+

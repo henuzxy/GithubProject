@@ -10,15 +10,20 @@
 #include<stdbool.h>
 #include<sys/socket.h>
 #include<arpa/inet.h>
+#include<unistd.h>
 int main(int argc,char* argv[]){
-    char host[] = "www.baidu.com";
-    unsigned long inaddr;
-    inaddr = inet_addr(host);
-    if(inaddr == INADDR_NONE){
-        fprintf(stdout,"YES\n"); 
+    pid_t pid = fork();
+    if(pid == 0){
+        pid = fork();
+        if(pid == 0){
+            fprintf(stdout,"子进程的子进程");
+        }
+        else{
+            fprintf(stdout,"子进程子进程:%d\n",pid);
+        }
     }
     else{
-        fprintf(stdout,"NO\n");
+        fprintf(stdout,"子进程:%d\n",pid);
     }
     return 0;
 }
