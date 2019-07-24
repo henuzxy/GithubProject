@@ -18,7 +18,7 @@ vim -r name
 //恢复.swp文件
 rm -rf dir
 
-将文件推送到github仓库
+/*将文件推送到github仓库*/
 git add filename
 //将文件添加到暂存区
 git commit -m "info"
@@ -27,6 +27,11 @@ git push origin master
 //推送到远程仓库的master分支
 git rm fiel(删除文件)
 git rm -r aaa(删除文件夹)
+
+/*git从github拉取分支更新本地代码*/
+git fetch origin master:temp//拉取远程的master分支，作为本地temp分支
+git merge temp//temp与本地分支合并
+git branch -d temp//删除暂存的temp分支
 
 %lx %x %lX %X 输出32位，64位的数的十六进制形式。
 
