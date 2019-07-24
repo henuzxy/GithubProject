@@ -15,7 +15,7 @@
 #include<signal.h>
 #include<string.h>
 #include<error.h>
-
+#include"socket.h"
 static void Usage(void){
     char useinfo[] =
         "webbench [选项参数]...URL\n"
@@ -49,7 +49,7 @@ static void Usage(void){
 #define PROGRAM_VERSION "1.5"
 /*缓冲流大小相关的宏定义*/
 #define REQUEST_SIZE (2048)
-
+#define BUF_SIZE (1024)
 /*选项相关变量与其默认值*/
 int method = METHOD_GET;
 int clients = 1;
@@ -63,7 +63,7 @@ int http = 1;//http协议版本，0:http0.9 1:http1.0 2:http1.1
 int speed = 0;
 int failed = 0;
 long long int byte_counts = 0;
-int timeout = 0;
+volatile int timeout = 0;
 
 /*进程管道*/
 int pipe_buf[2];
@@ -288,5 +288,35 @@ void build_request(const char *url){
     fprintf(stdout,"\nrequest:\n%s\n",request);
 }
 static int bench(){
+    pid_t pid = 0;
+    FILE *f;
+    int sock;
+
+    sock = my_socket(proxyhost == NULL?host:proxyhost,proxy_port);
+    if(sock < 0){
+        fprintf(stderr,"\n连接server失败.");
+        return 1;
+    }
+    close(sock);
+
+    /*创建管道*/
+    if(pipe(pipe_buf) == -1){
+        perror("创建管道失败");
+        return 3;
+    }
+    
+
+    
     return 0;    
+}
+
+void benchcore(const char *host,const int port,const char *req){
+    int rlen;
+    char buf[BUF_SIZE];
+    struct sigaction act;
+    act.sa_handler = alarm_handler;
+    act.sa_flags = 0;
+}
+static void alarm_handler(int signal){
+    timeout = 1;
 }
