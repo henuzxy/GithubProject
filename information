@@ -9,8 +9,8 @@ g++ name.cpp -o name -lpthread
 g++ name.cpp -o name -D_REENTRANT -lpthread
 //使用-D_REENTRANT会在编译时使用的是线程安全的函数。
 ./name
-run
-
+/*多文件编译*/
+gcc name01.c name02.c -o name//name02.c被name01.c调用，或者相反
 cat /proc/sys/kernel/osrelease
 //show linux version
 
