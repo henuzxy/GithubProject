@@ -165,3 +165,9 @@ func:发生特殊情况时,调用的函数的指针.
 #include<unistd.h>
 unsigned int alarm(unsigned int sec);
 相应sec时间后，将产生一个SIGALRM信号.
+
+/*signaction*/
+
+/*IO函数*/
+read()和write()
+读取常规文件时，不会阻塞进程，不管读取多少资金，read会在有限时间返回，从终端设备和网络设备中，不一定。如果网络没有接受到数据包，read就会阻塞。

@@ -32,6 +32,7 @@ int main(int argc,char *argv[]){
 
     if(pid == 0){
         fprintf(stdout,"Child process running.\n");
+        sleep(1);
         return 2;
     }
     else{
@@ -40,6 +41,7 @@ int main(int argc,char *argv[]){
         
         if(pid == 0){
             fprintf(stdout,"Child process running.\n");
+            sleep(2);
             return 3;
         }
         else{
