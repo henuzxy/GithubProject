@@ -135,7 +135,7 @@ ps au//查看进程列表
 1.利用wait()函数
 #include<sys/wait.h>
 pid_t wait(int *statloc);
-调用该函数时，如果已经有子进程终止，那么子进程终止时传递的返回值将保存到statloc所指向的内存空间,但该空间还保存有其他信息,需要利用宏来分离.
+调用该函数时，会阻塞进程,如果已经有子进程终止，那么子进程终止时传递的返回值将保存到statloc所指向的内存空间,但该空间还保存有其他信息,需要利用宏来分离.
 WIFEXITED();//子进程正常终止时返回真.
 WEXITSTATUS();//返回子进程的返回值.
 /*调用示例*/
@@ -144,5 +144,24 @@ int status;
 wait(&status);
 if(WIFEXITED(status))
     fprintf(stdout,"Child send:%d\n",WEXITSTATUS(status));
+2.利用waitpid()函数
+#include<sys/wait.h>
+pid_t waitpid(pid_t pid,int *statloc,int options);
 
+pid:等待终止的的目标子进程ID,若传递-1,则与wait函数相同,等待任意进程的终止.
+statloc:保存返回信息的空间指针
+options: 有以下几个选项
+    (1) WNOHANG：若制定的pid未终止，则返回0，不会阻塞进程.
 
+/*信号处理*/
+#include<signal.h>
+void (*signal(int signo,void (*func)(int)))(int);
+signo:特殊情况的信息，有如下:
+    SIGALRM:已到通过调用alarm函数注册的时间
+    SIGINT:输入CTRL+C.
+    SIGCHLD:子进程终止.
+func:发生特殊情况时,调用的函数的指针.
+/*alarm函数*/
+#include<unistd.h>
+unsigned int alarm(unsigned int sec);
+相应sec时间后，将产生一个SIGALRM信号.
