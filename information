@@ -171,3 +171,28 @@ unsigned int alarm(unsigned int sec);
 /*IO函数*/
 read()和write()
 读取常规文件时，不会阻塞进程，不管读取多少资金，read会在有限时间返回，从终端设备和网络设备中，不一定。如果网络没有接受到数据包，read就会阻塞。
+
+/*断开套接字连接*/
+#include<sys/socket.h>
+int shutdown(int sock,int howto);
+sock:需要断开套接字的文件描述符.
+howto:断开方式
+    SHUT_RD:0 断开输入流
+    SHUT_WR:1 断开输出流
+    SHUT_RDWR:2 同时断开IO流
+/*webbench为什么使用进程，而不是线程?*/
+默认情况下：主线程+辅助线程 <= 256.
+而进程的最大数目则和操作系统本身相关.
+
+/*perror()错误输出函数*/
+例如perror("fun"),其输出为：fun：后面跟着错误信息(加一个换行符)。包含头文件stdio.h.
+/*setvbuf函数*/
+int setvbuf(FILE *stream,char *buf,int type,unsigned size);
+stream:指向流的指针
+buf:期望缓冲区的地址
+type:期望缓冲区的类型
+    _IOFBF(满缓存):缓冲区为空时，从流中读入。缓冲区为满时，写出.
+    _IOLBF(行缓存):每次从流中读入一行或向流写一行.
+    _IONBF(无缓存):没有缓存区.
+size:缓存区字节数.
+

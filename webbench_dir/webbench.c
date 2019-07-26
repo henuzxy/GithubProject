@@ -289,7 +289,7 @@ void build_request(const char *url){
 }
 static int bench(){
     pid_t pid = 0;
-    FILE *f;
+    FILE *f = NULL;
     int sock;
 
     sock = my_socket(proxyhost == NULL?host:proxyhost,proxy_port);
@@ -303,20 +303,148 @@ static int bench(){
     if(pipe(pipe_buf) == -1){
         perror("创建管道失败");
         return 3;
+    } 
+    
+    /*创建子进程*/
+    for(int i=0;i<clients;++i){
+        pid = fork();
+        if(pid <= 0){
+            sleep(1);
+            break;//失败的和子进程(pid == 0)都不再继续fork
+        }
     }
-    
+    if(pid < 0){
+        fprintf(stderr,"子进程创建失败,%d\n",sock);
+        perror("创建子进程失败");
+        return 3;
+    }
+    else if(pid == 0){
+        /*子进程执行内容*/
+        if(proxyhost == NULL){
+            benchcore(host,proxy_port,request);
+        }
+        else{
+            benchcore(proxyhost,proxy_port,request);
+        }
+        /*把结果输入到管道中*/
+        f = fdopen(pipe_buf[1],"w");//使用标准IO函数，速度更快
+        if(f == NULL){
+            perror("打开管道入口失败.");
+            return 3;
+        }
+        fprintf(f,"%d %d %lld\n",speed,failed,byte_counts);//向管道写入记录的信息
+        fclose(f);
+        return 0;//正常结束
+    }
+    else{
+        f = fdopen(pipe_buf[0],"r");
+        if(f == NULL){
+            perror("打开管道出口失败.");
+            return 3;
+        }
+        setvbuf(f,NULL,_IONBF,0);
 
-    
-    return 0;    
+        /*初始化记录变量*/
+        speed = 0;
+        failed = 0;
+        byte_counts = 0;
+
+        while(true){
+            /*读取子进程写入的记录信息*/
+            int speed_r,failed_r;
+            long long int byte_r;
+            if(fscanf(f,"%d %d %lld",&speed_r,&failed_r,&byte_r) < 3){
+                fprintf(stderr,"某个子进程死亡!\n");
+                break;
+            } 
+            /*统计总量*/
+            speed += speed_r;
+            failed += failed_r;
+            byte_counts += byte_r;
+            clients -= 1;
+
+            if(clients == 0)
+                break;
+        }
+        fclose(f);
+        fprintf(stdout,"speed = %d pages/min, %d bytes/sec.\n 请求: %d 成功, %d 失败\n",
+                (int)((speed+failed)/(bench_time/60.0f)),
+                (int)(byte_counts*1.0)/bench_time,
+                speed,
+                failed);
+    } 
+    return sock; 
 }
 
 void benchcore(const char *host,const int port,const char *req){
     int rlen;
     char buf[BUF_SIZE];
     struct sigaction act;
-    act.sa_handler = alarm_handler;
+    
+    act.sa_handler = &alarm_handler;
+    sigemptyset(&act.sa_mask);
     act.sa_flags = 0;
+
+    if(sigaction(SIGALRM,&act,0) != 0){
+        exit(3);
+    }
+    alarm(bench_time);
+
+    rlen = strlen(req);
+    
+    while(true){
+        bool have_close = false;//用来判断套接字是否已经关闭.
+        if(timeout){
+            failed--;
+            return;
+        }
+        int sock =my_socket(host,port);
+        if(sock < 0){
+            failed++;
+            continue;
+        }
+        if(write(sock,req,rlen) != rlen){
+            failed++;
+            close(sock);
+            continue;
+        }
+        /*http0.9在受到服务器回复后会自动断开，没有keep-alive
+        * 我们可以用shutdown把套接字的输出流关闭，如果关闭失败，那么证明这是一个失败的套接字
+        * */
+        if(http == 0 && shutdown(sock,SHUT_WR) == -1){
+            failed++;
+            close(sock);
+            continue;
+        }
+        /*接收服务器的回应.*/
+        if(force == false){
+            while(true){
+                if(timeout)
+                    break;
+                int read_len = read(sock,buf,BUF_SIZE);
+
+                if(read_len < 0){
+                    failed++;
+                    close(sock);
+                    have_close = true;
+                    break;
+                }
+                else if(read_len == 0){
+                    break;
+                }
+                else{
+                    byte_counts += read_len;
+                }
+            }
+        }
+        if(have_close == false && close(sock) != 0){
+            failed++;
+            continue;
+        }
+        speed++;
+    }
 }
 static void alarm_handler(int signal){
-    timeout = 1;
+    if(signal == SIGALRM)
+        timeout = 1;
 }

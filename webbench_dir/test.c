@@ -2,25 +2,20 @@
 	> File Name: test.c
 	> Author:henuzxy 
 	> Mail: 
-	> Created Time: 2019年07月22日 星期一 16时20分42秒
+	> Created Time: 2019年07月26日 星期五 15时35分38秒
  ************************************************************************/
 
 #include<stdio.h>
 #include<string.h>
-#include<stdbool.h>
-#include<sys/socket.h>
-#include<arpa/inet.h>
+#include<fcntl.h>
+#include<sys/types.h>
+#include<sys/stat.h>
 #include<unistd.h>
-
+#include<sys/socket.h>
 int main(int argc,char *argv[]){
-    FILE *fp;
-    fp = fopen("input.txt","r");
-    if(fp == NULL){
-        perror("Error:");
-        //fprintf(stderr,"Error:");
-        return -1;
-    }
-    fclose(fp);
-
+    
+    fprintf(stdout,"SHUT_RD:%d\n",SHUT_RD);
+    fprintf(stdout,"SHUT_WR:%d\n",SHUT_WR);
+    fprintf(stdout,"SHUT_RDWR:%d\n",SHUT_RDWR);
     return 0;
 }

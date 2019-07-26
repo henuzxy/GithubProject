@@ -16,13 +16,13 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include<stdarg.h>
-#include"socket.c"
+#include"socket.h"
 int my_socket(const char *host,int client_port){
     int sock;
     struct sockaddr_in serv_addr;
     struct hostent *hp = NULL;
     
-    memset(serv_addr,0,sizeof(serv_addr));
+    memset(&serv_addr,0,sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     /*这里host可能是IP,也可能是域名*/
     if(inet_addr(host) != INADDR_NONE)
