@@ -31,7 +31,7 @@ int my_socket(const char *host,int client_port){
         hp = gethostbyname(host);
         if(hp == NULL)
             return -1;
-        serv_addr.sin_addr.s_addr = hp->h_addr;
+        serv_addr.sin_addr.s_addr = inet_addr(hp->h_addr);
     }
     serv_addr.sin_port = htons(client_port);
 
