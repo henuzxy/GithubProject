@@ -16,7 +16,6 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include<stdarg.h>
-#include"socket.h"
 int my_socket(const char *host,int client_port){
     int sock;
     struct sockaddr_in serv_addr;
@@ -31,14 +30,15 @@ int my_socket(const char *host,int client_port){
         hp = gethostbyname(host);
         if(hp == NULL)
             return -1;
-        serv_addr.sin_addr.s_addr = inet_addr(hp->h_addr);
+        memcpy(&serv_addr.sin_addr,hp->h_addr,hp->h_length);
     }
     serv_addr.sin_port = htons(client_port);
 
     sock = socket(AF_INET,SOCK_STREAM,0);
+   // fprintf(stdout,"sock = %d\n",sock);
     if(sock < 0)
         return sock;
-    if(connect(sock,(struct sockaddr*)&serv_addr,sizeof(serv_addr)) == -1)
+    if(connect(sock,(struct sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
         return -1;
     return sock;
 }

@@ -15,7 +15,7 @@
 #include<signal.h>
 #include<string.h>
 #include<error.h>
-#include"socket.h"
+#include"socket.c"
 static void Usage(void){
     char useinfo[] =
         "webbench [选项参数]...URL\n"
@@ -293,6 +293,7 @@ static int bench(){
     int sock;
 
     sock = my_socket(proxyhost == NULL?host:proxyhost,proxy_port);
+    fprintf(stdout,"webbench_sock = %d\n",sock);
     if(sock < 0){
         fprintf(stderr,"\n连接server失败.");
         return 1;

@@ -12,10 +12,11 @@
 #include<sys/stat.h>
 #include<unistd.h>
 #include<sys/socket.h>
+#include "socket.c"
 int main(int argc,char *argv[]){
-    
-    fprintf(stdout,"SHUT_RD:%d\n",SHUT_RD);
-    fprintf(stdout,"SHUT_WR:%d\n",SHUT_WR);
-    fprintf(stdout,"SHUT_RDWR:%d\n",SHUT_RDWR);
+    char host[] = "www.baidu.com";
+    int port = 80;
+    int sock = my_socket(host,port);
+    fprintf(stdout,"test_sock = %d\n",sock);
     return 0;
 }
