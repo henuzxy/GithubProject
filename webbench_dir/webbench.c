@@ -437,6 +437,7 @@ void benchcore(const char *host,const int port,const char *req){
                     break;
                 }
                 else{
+                    fprintf(stdout,"%s",buf);//test
                     byte_counts += read_len;
                 }
             }
