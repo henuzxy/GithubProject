@@ -14,6 +14,7 @@
 #include<sys/socket.h>
 #include "socket.c"
 int main(int argc,char *argv[]){
+    /* http://www.baidu.com:80/index.html */
     char host[] = "www.baidu.com";
     int port = 80;
     int sock = my_socket(host,port);

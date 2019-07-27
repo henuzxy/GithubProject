@@ -1,10 +1,3 @@
-/*************************************************************************
-	> File Name: webbench.c
-	> Author:henuzxy 
-	> Mail: 
-	> Created Time: 2019年07月22日 星期一 17时20分13秒
- ************************************************************************/
-
 #include<stdio.h>
 #include<unistd.h>
 #include<sys/param.h>
@@ -170,7 +163,7 @@ int main(int argc,char* argv[]){
         bench_time = 30;
     /*构造请求消息*/ 
     build_request(argv[optind]);
-    
+    fprintf(stdout,"OK\n");
     /**/
     fprintf(stdout,"Webbench --一款网站压力测试程序\n");
     fprintf(stdout,"测试链接:%s\n",argv[optind]);
@@ -245,18 +238,21 @@ void build_request(const char *url){
         /*获取域名和端口*/
         if(index(url+pos,':') != NULL && index(url+pos,':') < index(url+pos,'/')){
             strncpy(host,url+pos,strchr(url+pos,':')-url-pos);
-            memset(temp,0,sizeof(temp));
 
-            strncpy(temp,index(url+pos,':')+1,strchr(url+pos,'/')-index(url,':')-1);
+            memset(temp,0,sizeof(temp));
+            /*这里主要要只获得数字部分,否则会有段错误*/
+            strncpy(temp,index(url+pos,':')+1,strchr(url+pos,'/')-index(url+pos,':')-1);
             proxy_port = atoi(temp);
             if(proxy_port == 0)
                 proxy_port = 80;
         }
         else{
-            strncpy(host,url+pos,strchr(url+pos,'/')-url-pos);
+             strncpy(host,url+pos,strchr(url+pos,'/')-url-pos);
+//            strncpy(host,url+pos,strcspn(url+pos,"/"));
         }
+        /*向request写入请求页,如/index.html */
         strcat(request,strchr(url+pos,'/'));
-        //strcat(request+strlen(request),url+pos+strcspn(url+pos,"/"));
+  //      strcat(request+strlen(request),url+pos+strcspn(url+pos,"/"));
     }
     else{
         strcat(request,url);
@@ -286,6 +282,7 @@ void build_request(const char *url){
     if(http > 0)
         strcat(request,"\r\n");
     fprintf(stdout,"\nrequest:\n%s\n",request);
+    return;
 }
 static int bench(){
     pid_t pid = 0;
@@ -368,11 +365,10 @@ static int bench(){
                 break;
         }
         fclose(f);
-        fprintf(stdout,"speed = %d pages/min, %d bytes/sec.\n 请求: %d 成功, %d 失败\n",
+        fprintf(stdout,"spped = %d\n",speed);
+        fprintf(stdout,"速度 = %d 请求数/分, %d 字节数/秒.\n 请求: %d 成功, %d 失败\n",
                 (int)((speed+failed)/(bench_time/60.0f)),
-                (int)(byte_counts*1.0)/bench_time,
-                speed,
-                failed);
+                (int)(byte_counts*1.0)/bench_time,speed,failed);
     } 
     return sock; 
 }
@@ -396,7 +392,8 @@ void benchcore(const char *host,const int port,const char *req){
     while(true){
         bool have_close = false;//用来判断套接字是否已经关闭.
         if(timeout){
-            failed--;
+            if(failed > 0)
+                failed--;
             return;
         }
         int sock =my_socket(host,port);
