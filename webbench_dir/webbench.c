@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<unistd.h>
 #include<sys/param.h>
+#include<sys/wait.h>
 #include<rpc/types.h>
 #include<getopt.h>
 #include<strings.h>
@@ -289,8 +290,13 @@ static int bench(){
     FILE *f = NULL;
     int sock;
 
+    struct sigaction act_child;
+    act_child.sa_handler = &alarm_handler;
+    sigemptyset(&act_child.sa_mask);
+    act_child.sa_flags = 0;
+    sigaction(SIGCHLD,&act_child,0);
     sock = my_socket(proxyhost == NULL?host:proxyhost,proxy_port);
-    fprintf(stdout,"webbench_sock = %d\n",sock);
+
     if(sock < 0){
         fprintf(stderr,"\n连接server失败.");
         return 1;
@@ -445,4 +451,8 @@ void benchcore(const char *host,const int port,const char *req){
 static void alarm_handler(int signal){
     if(signal == SIGALRM)
         timeout = 1;
+    else if(signal == SIGCHLD){
+        int status;
+        pid_t pid = waitpid(-1,&status,WNOHANG);
+    }
 }
