@@ -1,21 +1,26 @@
-/*************************************************************************
-	> File Name: test.c
-	> Author:henuzxy 
-	> Mail: 
-	> Created Time: 2019年07月22日 星期一 16时20分42秒
- ************************************************************************/
-
 #include<stdio.h>
-#include<string.h>
-#include<stdbool.h>
-#include<sys/socket.h>
-#include<arpa/inet.h>
+#include<pthread.h>
 #include<unistd.h>
-#include<netdb.h>
-int main(int argc,char *argv[]){
-    char *host = argv[1];
-    struct hostent *ht = gethostbyname(host);
-    fprintf(stdout,"%s\n",ht->h_name);
-    fprintf(stdout,"%s\n",inet_ntoa(*(struct in_addr*)ht->h_addr_list[0]));
-    return 0;
+
+int Count = 0;
+void* thread_main(void *arg);
+
+int main(int argc,char* argv[]){
+    for(int i=1;i<=2;++i){
+        pthread_t t_id;
+        int thread_param = 5;
+        if(pthread_create(&t_id,NULL,thread_main,(void*)&thread_param) != 0){
+            fprintf(stderr,"pthread_create() error\n");
+            return -1;
+        }
+    }
+    pthread_join();
+	return 0;
+}
+
+void* thread_main(void* arg){
+    pthread_detach(pthread_self());
+    fprintf(stdout,"no.%d thread\n",++Count);
+
+	return NULL;
 }

@@ -14,7 +14,7 @@
 #define BUF_SIZE (2048)
 #define true (1)
 int main(int argc,char *argv[]){
-    char request[BUF_SIZE] = "GET /index.html HTTP/1.0\r\nUser-Agent: henuzxy\r\nHost: www.baidu.com\r\n\r\n";
+    char request[BUF_SIZE] = "OPTIONS / HTTP/1.1\r\nHost: www.baidu.com\r\n\r\n";
     fprintf(stdout,"request:\n%s\n",request);
     int port = 80;
     int sock = my_socket(argv[1],port);
