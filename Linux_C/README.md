@@ -13,8 +13,10 @@
 - 2.调用epoll\_wait函数时，无需每次传递监视对象.
 ### epoll服务端需要的函数和结构体
 
-int epoll\_create(int size);//创建保存epoll文件描述符的空间.
-**成功时返回epoll文件描述符，失败时返回-1**
+int epoll\_create(int size);
+
+**创建保存epoll文件描述符的空间.成功时返回epoll文件描述符，失败时返回-1**
+
 调用epoll\_create函数创建的文件描述符保存空间称为 "epoll例程".
 通过参数size传递的值决定epoll例程的大小，但该值只是向操作系统提出的建议。即仅供操作系统参考.
 **Linux 2.6.8之后的内核完全忽略传入的size，因为内核会根据情况调整epoll例程的大小,cat /proc/sys/kernel/osrelease 可以查看Linux版本**
