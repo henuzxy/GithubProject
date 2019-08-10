@@ -32,7 +32,9 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="PrintString.h" />
 		<Unit filename="StrVec.h" />
+		<Unit filename="StrVecPtr.h" />
 		<Unit filename="Student.h" />
 		<Unit filename="main.cpp" />
 		<Extensions>

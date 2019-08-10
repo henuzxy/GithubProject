@@ -2,6 +2,7 @@
 #define STUDENT_H_INCLUDED
 #include<iostream>
 #include<string>
+
 using namespace std;
 
 class Student{
@@ -16,7 +17,6 @@ public:
     int getage() const{
         return this->age;
     }
-
     friend istream& operator >> (istream& is,Student &stu);//把重载输入运算符>>定义为友元
 private:
     string name;
