@@ -1,0 +1,19 @@
+# depslib dependency file v1.0
+1565364585 source:c:\users\surface\desktop\cpp\main.cpp
+	"student.h"
+	"StrVec.h"
+	<vector>
+
+1565355500 c:\users\surface\desktop\cpp\student.h
+	<iostream>
+	<string>
+
+1554959881 source:c:\users\surface\desktop\cpp\student.cpp
+	"student.h"
+	<iostream>
+
+1565364652 c:\users\surface\desktop\cpp\strvec.h
+	<string>
+	<memory>
+	<stdexcept>
+
