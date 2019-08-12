@@ -30,6 +30,11 @@ git fetch origin master:temp//拉取远程的master分支，作为本地temp分�
 git merge temp//temp与本地分支合并
 git branch -d temp//删除暂存的temp分支
 
+/*git用远程分支覆盖本地分支*/
+git fetch --all
+git reset --hard origin/master
+git pull
+
 git rm fiel(删除文件)
 git rm -r aaa(删除文件夹)
 %lx %x %lX %X 输出32位，64位的数的十六进制形式。

@@ -1,0 +1,47 @@
+#ifndef ZXYTREE_H_INCLUDED
+#define ZXYTREE_H_INCLUDED
+#include<memory>
+#include<iostream>
+
+using namespace std;
+#define lson (0)
+#define rson (1)
+template <typename T>
+class Node{
+public:
+    template<typename B> friend class Tree;
+    typedef T value_type;
+    typedef int size_type;
+    Node(value_type _value,shared_ptr<value_type> _father = nullptr){
+        cnt = 0;
+        value = _value;
+        father = _father;
+        son[lson] = son[rson] = nullptr;
+    }
+    value_type getvalue(){
+        return this->value;
+    }
+private:
+    value_type value;
+    shared_ptr<value_type> father;
+    shared_ptr<value_type> son[2];
+    size_type cnt;
+};
+template <typename B>
+class Tree{
+public:
+    typedef B value_type;
+    typedef int size_type;
+    typedef Node<value_type> Node;
+    value_type get(){
+        root = make_shared<Node>(3);
+        return root->getvalue();
+    }
+private:
+    shared_ptr<Node> root;
+    bool which_son(shared_ptr<Node> f,shared_ptr<Node> s){
+        return f->son[rson] == s;
+    }
+};
+
+#endif // ZXYTREE_H_INCLUDED
