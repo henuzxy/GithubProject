@@ -98,9 +98,6 @@ SmallInt val(2);
 
 `explicit operator int() const;`再输出时就会报错。必须使用显示请求即`static_cast<int>(val)`这样就能输出了。
 
+##### random_shuffle(first,last)
 
-
-
-
-
-
+随机重新排列范围内的元素
