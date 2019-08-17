@@ -101,3 +101,6 @@ SmallInt val(2);
 ##### random_shuffle(first,last)
 
 随机重新排列范围内的元素
+
+C++引用必须初始化
+

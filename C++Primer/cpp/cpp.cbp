@@ -36,6 +36,7 @@
 		<Unit filename="StrVec.h" />
 		<Unit filename="StrVecPtr.h" />
 		<Unit filename="Student.h" />
+		<Unit filename="demo.h" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<code_completion />
