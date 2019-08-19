@@ -319,7 +319,7 @@ public:
 
 ![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2019/01/19/237_example.png)
 
- 
+
 
 **示例 1:**
 
@@ -347,3 +347,131 @@ public:
 - 不要从你的函数中返回任何结果。
 
 这个题要注意，已经说了，给的节点不是尾节点。所以，我们把当前节点的值和下一个节点的值交换。再把下一个节点删去，这样就达到删除节点的目的了。
+
+### 排序链表
+
+在 *O*(*n* log *n*) 时间复杂度和常数级空间复杂度下，对链表进行排序。
+
+**示例 1:**
+
+```
+输入: 4->2->1->3
+输出: 1->2->3->4
+```
+
+**示例 2:**
+
+```
+输入: -1->5->3->4->0
+输出: -1->0->3->4->5
+```
+
+做法有很多种，不过操作起来都很麻烦，目前没有找到能够常数空间下的做法，自己这里merge的时候，使用了递归，所以算是O(N)的时间复杂度。
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* MergeSort(ListNode *now){
+        if(now == nullptr || now->next == nullptr)
+            return now;
+        ListNode *fast = now,*slow = now;
+        ListNode *Break = now;
+        while(fast != nullptr && fast->next != nullptr){
+            fast = fast->next->next;
+            Break = slow;
+            slow = slow->next;
+        }
+        Break->next = nullptr;
+        ListNode *l = MergeSort(now);
+        ListNode *mid = MergeSort(slow);
+        return Merge(l,mid);
+    }
+    ListNode *Merge(ListNode* l,ListNode *m){
+        if(l == nullptr)
+            return m;
+        else if(m == nullptr)
+            return l;
+        else if(l->val < m->val){
+            l->next = Merge(l->next,m);
+            return l;
+        }
+        else{
+            m->next = Merge(l,m->next);
+            return m;
+        }
+    }
+    ListNode* sortList(ListNode* head) {
+        return MergeSort(head);
+    }
+};
+```
+
+**2019.8.19 15:50 链表 Over**
+
+常数时间插入、删除和获取随机元素
+
+
+
+设计一个支持在*平均* 时间复杂度 **O(1)** 下，执行以下操作的数据结构。
+
+1. `insert(val)`：当元素 val 不存在时，向集合中插入该项。
+2. `remove(val)`：元素 val 存在时，从集合中移除该项。
+3. `getRandom`：随机返回现有集合中的一项。每个元素应该有**相同的概率**被返回。
+
+**示例 :**
+
+```
+// 初始化一个空的集合。
+RandomizedSet randomSet = new RandomizedSet();
+
+// 向集合中插入 1 。返回 true 表示 1 被成功地插入。
+randomSet.insert(1);
+
+// 返回 false ，表示集合中不存在 2 。
+randomSet.remove(2);
+
+// 向集合中插入 2 。返回 true 。集合现在包含 [1,2] 。
+randomSet.insert(2);
+
+// getRandom 应随机返回 1 或 2 。
+randomSet.getRandom();
+
+// 从集合中移除 1 ，返回 true 。集合现在包含 [2] 。
+randomSet.remove(1);
+
+// 2 已在集合中，所以返回 false 。
+randomSet.insert(2);
+
+// 由于 2 是集合中唯一的数字，getRandom 总是返回 2 。
+randomSet.getRandom();
+```
+
+因为C++ 中rand() 获得区间是[0,RAND_MAX),而我们要得到[0,st.size());这个区间的随机数。
+
+所以我们利用这个公式进行获得。当r是rand()获得的随机数，则p = r/RAND_MAX,表示在这个区间的位置。同理放到目标区间即p\*st.size();即可得到目标区间对应的结果。
+
+代码如下:
+
+```cpp
+/** Get a random element from the set. */
+    int getRandom() {
+        int r = rand();
+        int k = r*1.0/RAND_MAX*st.size();
+        unordered_set<int>::iterator it = st.begin();
+        for(int i=1;i<=k;++i)
+            it++;
+        return *it;
+    }
+private:
+    unordered_set<int> st;
+```
+
+**2019.8.19 16:43 哈希与映射 Over**
