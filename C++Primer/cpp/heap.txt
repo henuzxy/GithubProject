@@ -1,0 +1,40 @@
+template<typename T1,typename T2 = vector<T1>,typename T3 = less<T1>()>
+class heap{
+public:
+    typedef unsigned int size_type;
+    typedef T1 key_type;
+    heap(){
+        heap_size = 0;
+        data.push_back(0);
+    }
+    T1 top(){
+
+    }
+    void pop(){
+
+    }
+    size_type size(){
+        return heap_size;
+    }
+    void push_back(key_type _key){
+        data.push_back(_key);
+        heap_size++;
+        up(heap_size);
+    }
+private:
+    size_type heap_size;
+    T3 Compare;
+    T2 data;
+    void up(size_type p){
+        while(p != 0){
+            size_type f = p/2;
+            if(Compare(p,f)){
+                swap(data[p],data[f]);
+                p = f;
+            }
+            else
+                break;
+        }
+    }
+    void down();
+};
