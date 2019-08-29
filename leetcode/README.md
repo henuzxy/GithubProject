@@ -603,7 +603,9 @@ public:
 
 这个题目，采用三分的方法。如下：
 
-![三分](C:\Users\ch\Desktop\GithubProject\leetcode\img\三分.png)
+![三分](img\三分.png)
+
+
 
 ```cpp
 if(fun(mid) > f(mmid))

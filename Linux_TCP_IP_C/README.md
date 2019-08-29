@@ -156,3 +156,30 @@ UDP不会发送类似ACK的应答包，也不会像SEQ那么样给数据包分�
 UDP 具有流控制。
 
 TCP套接字默认使用Nagle算法交换数据，因此最大限度的进行缓冲，知道收到ACK。禁用Nagle算法时的发送过程与ACK接受与否无关，因此数据到达输出缓冲后将立即被发送出去。但不使用Nagle算法会导致网络负载。
+
+#### 基于Windows的I/O函数
+
+在Linux中套接字也是文件，因而可以通过文件I/O函数read和write进行数据传输。而Windows中则有些不同。Windows严格区分文件IO和套接字IO,
+
+```cpp
+#include<winsock2.h>
+int send(SOCKET s,const char *buf,int len,int flags);
+//成功时返回传输字节数，失败时返回SOCKET_ERROR
+```
+
+- s 表示数据传输对象连接的套接字句柄值
+- buf 保存待传输数据的缓冲地址值
+- len 表示要传输的字节数
+- flags 表示传输数据时用到的多种选项信息
+
+```cpp
+#include<winsock2.h>
+int recv(SOCKET s,constr char *buf,int len,int flags);
+//成功时返回接收的字节数(收到EOF时为0),失败时返回SOCKET_ERROR
+```
+
+- s 表示数据接收对象连接的套接字句柄值
+- buf 保存接收数据的缓冲池地址值
+- len 能够接收的最大字节数
+- flags 接收数据时用到的多种选项信息。
+
