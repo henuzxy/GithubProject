@@ -1,7 +1,7 @@
 #### 类的内部越界函数的设计
 
 ```cpp
-void check(size_type,const string &msg) const{
+void check(size_type p,const string &msg) const{
 	if(size_type >= this->size())
 		throw out_of_range(msg);//在<stdexcept>头文件下
 }
