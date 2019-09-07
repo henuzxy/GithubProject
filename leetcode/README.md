@@ -641,3 +641,63 @@ public:
 };
 ```
 
+
+
+### 摆动排序 II
+
+
+
+给定一个无序的数组 `nums`，将它重新排列成 `nums[0] < nums[1] > nums[2] < nums[3]...` 的顺序。
+
+**示例 1:**
+
+```
+输入: nums = [1, 5, 1, 1, 6, 4]
+输出: 一个可能的答案是 [1, 4, 1, 5, 1, 6]
+```
+
+**示例 2:**
+
+```
+输入: nums = [1, 3, 2, 2, 3, 1]
+输出: 一个可能的答案是 [2, 3, 1, 3, 1, 2]
+```
+
+**说明:**
+你可以假设所有输入都会得到有效的结果。
+
+**进阶:**
+你能用 O(n) 时间复杂度和 / 或原地 O(1) 额外空间来实现吗？
+
+这个题，感觉自己做了也没有长进，太浮躁了。哎
+
+
+
+用了排序，按照a[n/2],a[n],a[n/2-1],a[n-1]，这种排列就可以了，这样可以防止中间出现相等的情况也能解决。
+
+代码如下，翻转时注意mid的选取。
+
+```cpp
+class Solution {
+public:
+    void wiggleSort(vector<int>& nums) {
+        vector<int> vec = nums;
+        sort(vec.begin(),vec.end());
+        int mid;
+        if(vec.size()%2)
+            mid = vec.size()/2+1;
+        else
+            mid = vec.size()/2;
+        reverse(vec.begin(),vec.begin()+mid);
+        int l = 0,r = nums.size()-1;
+        for(int i=0;i<nums.size();++i){
+            if(i & 1)
+                nums[i] = vec[r--];
+            else
+                nums[i] = vec[l++];
+        }
+    }
+};
+```
+
+**2019.09.04 22:15 排序与检索 Over**

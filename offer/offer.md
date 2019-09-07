@@ -1,8 +1,8 @@
-1. 为什么连接是三次握手，而断开确实四次挥手?
+为什么连接是三次握手，而断开确实四次挥手?
 
-   因为建立连接的时候，双方没有数据的来往，可以把ACK和SYN放到一个报文进行发送。
+因为建立连接的时候，双方没有数据的来往，可以把ACK和SYN放到一个报文进行发送。
 
-   但在关闭连接时，收到FIN报文后，它表示对方没有数据需要再发送了，但自己可能还有数据要发给对方，这是发送一个ACK报文，表示自己收到了FIN报文。当自己也没有数据需要发送的时候，就发送一个FIN表示你现在同意关闭连接了，对面再发送一个ACK即完成断开。
+但在关闭连接时，收到FIN报文后，它表示对方没有数据需要再发送了，但自己可能还有数据要发给对方，这是发送一个ACK报文，表示自己收到了FIN报文。当自己也没有数据需要发送的时候，就发送一个FIN表示你现在同意关闭连接了，对面再发送一个ACK即完成断开。
 
 2. 为什么CLIENT主机最后一次发送ACK后不立即断开，而是经过TIME_WAIT状态经过2MSL(最大报文生存时间)后才返回到CLOSE状态？
 
@@ -203,6 +203,8 @@ const int temp = val;
 const int &ri = temp;
 ```
 
+**const引用允许用任意表达式作为初始值**
+
 const和指针
 
 ```cpp
@@ -238,6 +240,8 @@ public:
 25.拷贝构造函数为什么第一个参数必须是引用类型？
 
 ​	因为，当实现了拷贝构造函数后，就不会有默认的拷贝构造函数了，即只有自己实现的，如果其参数不是引用类型的，那么我们为了调用拷贝构造函数，必须要拷贝它的实参，但为了拷贝实参又需要调用拷贝构造函数，矛盾了。
+
+注意拷贝构造函数只会在初始化时调用，赋值初始化也是调用拷贝构造函数，例如`Base b = a` 
 
 26.explicit的作用是什么？
 
@@ -276,3 +280,116 @@ int &&vr2 = val*100;//正确，右值引用。
 int &&vr3 = vr2;//错误，对确实是错误，因为变量表达式是一个右值
 ```
 
+29.C/C++ 程序内存的分配情况？
+
+	1. 栈区：由编译器自动分配释放，存放运行函数而分配的局部变量、函数参数、返回数据、返回地址等
+ 	2. 堆区：一般由开发人员分配释放，如果不释放可能会由操作系统释放。
+ 	3. 全局区（静态区）:存放全局变量、静态变量、常量，程序结束后由系统释放。
+ 	4. 文本常量区：存放常量字符串的地方，程序结束后由系统释放。
+ 	5. 程序代码区：存放函数体的二进制代码。
+
+30.谈谈线程与进程的区别?为什么线程效率更高？
+
+1. 进程是资源分配的最小单位、线程是程序执行的最小单位，它是进程的一个流。
+
+2. 进程有自己的独立空间，每启动一个进程，系统都会为它分配所有的地址空间，即栈、堆、全局区、程序代码区等。而线程只会分配栈空间、其堆等其他内存空间是共享的。所以切换一个进程要比切换线程花费大很多。
+
+3. 进程之间的通信更加方便，可以利用全局变量、静态变量、堆等。而进程要使用IPC的通信方式
+
+31. 谈谈进程的几种基本状态
+
+    1. 创建状态：进程创建需要申请一个PCB，向其中填写相关的信息，完成资源分配，如果无法满足，就无法被调度。
+    2. 就绪状态：进程已经分配了所需要的资源，只需要分配CPU就可以运行（被调度）
+    3. 执行状态：就绪状态被调度后，就被进入此状态。
+    4. 阻塞状态：正在执行的进程由于某些事情（IO请求、申请缓存失败）等暂时无法运行，在满足请求后重新进入就绪状态。
+    5. 终止状态：进程结束、出现错误，被系统终止等，无法再被执行。
+
+    ![img](img\进程状态转化图.png)
+
+    31.**请你设计一种LRU(最近最少使用)的缓存机制，要求get,set操作均为O(1)的时间复杂度。**
+
+    ​	设计思想，哈希表+链表。链表节点信息，key(位置)-value(值)，哈希表节点信息,key(位置)-value(节点信息).链表head - > tail 从左往右最近使用最多。head是最近使用最少的。
+    
+    - get(int key)操作，判断哈希表中是否存在这个位置，不存在输出-1，存在，把这个节点从链表剔除，并放入末尾。
+    - set(int key,int value)操作，哈希表中存在，则直接修改下value,不存在的话，需要判断当前是否达到最大容量，如果达到的话，把链表第一个节点剔除。然后把新节点放入链表尾部、以及哈希表中。
+    
+    代码实现如下:
+    
+    ```cpp
+    #pragma once
+    #include<list>
+    #include<string>
+    #include<memory>
+    #include<unordered_map>
+    using namespace std;
+    class ListNode {
+    public:
+    	explicit ListNode(int _key, int _value) {
+    		key = _key;
+    		value = _value;
+    		pre = nullptr;
+    		nex = nullptr;
+    	}
+    	ListNode *pre,*nex;
+    	int key, value;
+    };
+    class LRUcache {
+    public:
+    	explicit LRUcache(int _capacity):capacity(_capacity),Size(0){}
+    	int get(int key) {
+    		if (!hashmp.count(key))
+    			return -1;
+    		
+    		ListNode* now = hashmp[key];
+    		if (now == tail)
+    			return now->value;
+    		/*先把这个节点从链表中剔除*/
+    		now->pre->nex = now->nex;
+    		now->nex->pre = now->pre;
+    		
+    		/*把这个节点放入队尾*/
+    		tail->nex = now;
+    		now->pre = tail;
+    		now->nex = nullptr;
+    		tail = now;
+    		return now->value;
+    	}
+    	void set(int key, int value) {
+    		if (get(key) != -1) {
+    			hashmp[key]->value = value;
+    			return;
+    		}
+    		if (Size == capacity) {
+    			ListNode* now = head->nex;
+    			if (now == tail) {
+    				now->pre->nex = nullptr;
+    				tail = tail->pre;
+    			}
+    			else {
+    				now->pre->nex = now->nex;
+    				now->nex->pre = now->pre;
+    			}
+    			hashmp.erase(now->key);
+    			Size--;
+    			delete now;
+    		}
+    		ListNode* ins = new ListNode(key, value);
+    		tail->nex = ins;
+    		ins->pre = tail;
+    		tail = ins;
+    		hashmp.insert(make_pair(key, ins));
+    		Size++;
+    	}
+    private:
+    	ListNode* head = new ListNode(-1,-1);
+    	ListNode* tail = head;
+    	int capacity,Size;
+    	unordered_map<int, ListNode*> hashmp;
+    };
+    ```
+    
+    32.为什么STL模板库中把函数的实现都放入.h文件中?
+    
+    ​	因为STL中大多都是模板类，对于模板类，如果声明和实现分离的话，会在链接阶段报错。因为在编译.h的时候，编译器只看到声明，为看到定义，会把问题留给链接程序，同样编译.cpp时，它无法生成代码，因为它不知道具体要调用哪个类型。所以链接时会报出无定义成员的错误。
+    
+    
